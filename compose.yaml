@@ -1,0 +1,37 @@
+name: portfolio-release-2020-ledger
+services:
+  app:
+    build: .
+    image: portfolio-release-2020-ledger:local
+    ports:
+      - "127.0.0.1:${LEDGER_PORT:-8280}:8000"
+    environment:
+      MONEYVIS_DB: /state/ledger.sqlite3
+      MONEYVIS_MAX_IMPORT_BYTES: "${MONEYVIS_MAX_IMPORT_BYTES:-1000000}"
+      MONEYVIS_MAX_IMPORT_ROWS: "${MONEYVIS_MAX_IMPORT_ROWS:-50000}"
+      MONEYVIS_CURRENCY: "${MONEYVIS_CURRENCY:-GBP}"
+    volumes:
+      - ledger-state:/state
+    networks:
+      - ledger
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 256m
+    cpus: 1.0
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 10s
+      timeout: 4s
+      retries: 5
+      start_period: 8s
+networks:
+  ledger:
+    name: portfolio-release-2020-ledger-network
+volumes:
+  ledger-state:
+    name: portfolio-release-2020-ledger-state

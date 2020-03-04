@@ -1,0 +1,40 @@
+{
+  "recorded_from_existing_verified_manifests_at_final_audit": "2026-10-16",
+  "original_publisher": "MoneyVis authors: Firat, Vytla, Singh, Jiang, Laramee",
+  "paper_doi": "10.2312/evs.20231052",
+  "paper_url": "https://people.cs.nott.ac.uk/blaramee/research/financeVis/firat23moneyVis.pdf",
+  "original_snapshot": {
+    "source": "https://docs.google.com/spreadsheets/d/1pYTMqRhEI48hv_zNWZriHW_0vRSrA9ZSQ31aLT4Vbk0/export?format=csv",
+    "retrieved_at": "2026-10-16T07:17:40.757914+00:00",
+    "sha256": "d74a8abaa3aae1f9b282f56b6b241f7c67ce1f89f0e80580a9ee23e5e58041f9",
+    "bytes": 301864,
+    "rows_including_header": 6568
+  },
+  "preparation": {
+    "prepared_at": "2026-10-16T07:31:15.301416+00:00",
+    "source_sha256": "d74a8abaa3aae1f9b282f56b6b241f7c67ce1f89f0e80580a9ee23e5e58041f9",
+    "sha256": "259b973e66c489b8c7aef9f3f80138d581105aa60ca7653afe87411a3a860e5d",
+    "bytes": 309155,
+    "records": 6567,
+    "masked_rows": 668,
+    "transform": "Preserve every row, order, date, type and money string. Replace description for FPI/FPO/PAY/BGC/DEP/CHQ with a type-specific hidden-counterparty label. No sampling, imputation, categorization or synthetic rows.",
+    "currency": "GBP assumed from original UK source context; absent from raw schema",
+    "splits": "No model fitting. Synthetic domain test fixtures are separate from observed demo data.",
+    "limitations": "Masking reduces detail and may merge counterparties for analysis; transfer-like kinds must not become recurrence evidence merely because masked text matches. Raw source remains excluded/local. Not a guarantee of anonymity."
+  },
+  "authenticity": "Author-described anonymized historical account transactions; no independent authenticity audit",
+  "license": "Separate dataset license unspecified; article CC BY does not automatically license the data. Local research/analysis; no redistribution claim.",
+  "coverage": "2015\u20132022; single account; not live or population representative",
+  "schema": [
+    "Transaction Date",
+    "Transaction Type",
+    "Transaction Description",
+    "Debit Amount",
+    "Credit Amount",
+    "Balance"
+  ],
+  "acquisition": "python3 scripts/acquire_data.py --verify (cached checksum) or bounded publisher GET; explicit refresh requires new review",
+  "privacy": "Raw and prepared data excluded from tracking; descriptions masked in 668rows, not an anonymity guarantee; no bank connection",
+  "split": "No model fitting; synthetic test fixtures distinct from observed rows",
+  "details": "DATA_SOURCES.md"
+}

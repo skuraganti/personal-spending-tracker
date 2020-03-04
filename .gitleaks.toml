@@ -1,0 +1,6 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Generated dependencies, private data cache, and test caches are not project source"
+paths = ['''(^|/)(\.venv|data|\.pytest_cache|\.ruff_cache|__pycache__)(/|$)''']
