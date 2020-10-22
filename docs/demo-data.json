@@ -230,7 +230,5 @@
   "currency": "GBP (synthetic fixture)",
   "source_url": "https://doi.org/10.2312/evs.20231052",
   "limit": "No original MoneyVis data is redistributed. Rules/alerts here run only in this browser.",
-  "theme_year": 2020,
-  "developed_at": "2026-10-16",
-  "repository": "https://github.com/skuraganti/2020-personal-spending-tracker"
+  "repository": "https://github.com/skuraganti/personal-spending-tracker"
 }

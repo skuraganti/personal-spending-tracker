@@ -158,7 +158,7 @@ function renderImports(items) {
   let container = $('import-history');
   if (!container) { container = node('div'); container.id = 'import-history'; $('import-form').after(container); }
   container.replaceChildren(node('h3', 'Imported statements'));
-  for (const item of items) { const entry = node('div', undefined, 'record'), text = node('div'); text.append(node('strong', item.name + ' · ' + item.rows + ' rows'), node('small', item.created_at), node('small', 'SHA-256 ' + item.id)); entry.append(text); container.append(entry); }
+  for (const item of items) { const entry = node('div', undefined, 'record'), text = node('div'); text.append(node('strong', item.name + ' · ' + item.rows + ' rows'), node('small', 'SHA-256 ' + item.id)); entry.append(text); container.append(entry); }
   if (!items.length) container.append(node('p', 'No statements imported yet. The demo CSV is in data/prepared/moneyvis-demo.csv.', 'empty'));
 }
 // Add the explicit type condition supported by the domain engine to the preserved worker form.

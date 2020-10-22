@@ -1,6 +1,6 @@
 # Engineering decisions and experiments
 
-Actual development date: 2026-10-16. The year prefix is a theme.
+Actual development date: 2026-10-16.
 
 - **Data:** compared original MoneyVis, UCI Online Retail and PKDD1999 Financial. MoneyVis matches the actual statement workflow. Its standalone data license remains unspecified; express author research/education release supports this private local demo. No data redistribution is claimed. Article license and data permissions are separate.
 - **Money:** integer pennies with Decimal validation at input; no floating-point accumulation. GBP is an explicit assumption because the raw file has no currency column. Credits are not negative spending, and savings/transfer flows need separate explanation.

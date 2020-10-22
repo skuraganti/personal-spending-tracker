@@ -1,6 +1,6 @@
 # Data sources (initial reviewed selection)
 
-Retrieval date: 2026-10-16 UTC. Actual research/development date, not the prefix year.
+Retrieval date: 2026-10-16 UTC. Actual research/development date.
 
 | Candidate | Original publisher / source | Authenticity and access | License / use | Decision |
 |---|---|---|---|---|

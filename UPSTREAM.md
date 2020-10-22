@@ -1,6 +1,6 @@
 # Upstream references and reuse
 
-Reviewed: 2026-10-16. These projects are independent local portfolio work built with supervised Claude Code implementation and ChatGPT verification. The prefix year is a theme.
+Reviewed: 2026-10-16. These projects are independent local portfolio work built with supervised Claude Code implementation and ChatGPT verification.
 
 ## Actual Budget
 
