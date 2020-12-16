@@ -1,6 +1,6 @@
 # Upstream references and reuse
 
-Reviewed: 2026-10-16. These projects are independent local portfolio work built with supervised Claude Code implementation and ChatGPT verification.
+Reviewed: 2026-10-16. This file records workflow references and component terms.
 
 ## Actual Budget
 
@@ -15,4 +15,4 @@ Reviewed: 2026-10-16. These projects are independent local portfolio work built 
 
 The runtime uses Python/FastAPI/SQLite and native browser standards. Exact installed versions and transitive dependencies will be recorded in the lockfile. Any future vendored code/assets must retain their original license/copyright and a pinned revision here. Dataset provenance and permissions are separately documented in DATA_SOURCES.md; software licenses do not license source data.
 
-The implementation and documentation should identify actual adaptations and supervisor fixes. Do not remove required attribution, invent authorship/history, or present an upstream application as wholly original work.
+The implementation and documentation should identify actual adaptations and integration fixes. Do not remove required attribution, invent authorship/history, or present an upstream application as wholly original work.

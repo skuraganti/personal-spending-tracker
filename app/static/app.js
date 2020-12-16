@@ -2,7 +2,8 @@
 // Browser data comes only from this local API. Never interpolate statement text as HTML.
 const $ = id => document.getElementById(id);
 const state = {month: '', page: 1, pageSize: 25, categories: [], total: 0, view: 'overview', rules: [], requests: {}};
-const money = pennies => new Intl.NumberFormat('en-GB', {style: 'currency', currency: 'GBP'}).format(pennies / 100);
+// Integer quotient/remainder: pennies / 100 rounds near 2**53 (the server's MAX_PENNIES).
+const money = pennies => { const abs = Math.abs(pennies), pence = abs % 100; return (pennies < 0 ? '-' : '') + '£' + new Intl.NumberFormat('en-GB').format((abs - pence) / 100) + '.' + String(pence).padStart(2, '0'); };
 function node(tag, text, className) {
   const el = document.createElement(tag);
   if (text !== undefined) el.textContent = text;

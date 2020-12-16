@@ -7,9 +7,11 @@ from pathlib import Path
 
 from .db import classify, connect, rules
 from .masking import mask_description
-from .money import parse_optional_pennies, parse_pennies
+from .money import MAX_PENNIES, parse_optional_pennies, parse_pennies
 
 FIELDS = ["Transaction Date", "Transaction Type", "Transaction Description", "Debit Amount", "Credit Amount", "Balance"]
+# Python's \d and Decimal accept non-ASCII digits (Arabic-Indic, fullwidth, ...); statements must not.
+ASCII_FIELDS = (FIELDS[0], FIELDS[3], FIELDS[4], FIELDS[5])
 
 
 class ImportFailure(ValueError):
@@ -23,7 +25,8 @@ def parse_statement(data, settings):
         raise ImportFailure([{"row": 0, "error": "Empty file or import byte limit exceeded"}])
     parsed, diagnostics, blank_types = [], [], 0
     try:
-        reader = csv.DictReader(io.StringIO(data.decode("utf-8-sig")), strict=True)
+        # newline="" lets csv handle CRLF, bare CR and newlines inside quoted fields.
+        reader = csv.DictReader(io.StringIO(data.decode("utf-8-sig"), newline=""), strict=True)
         if reader.fieldnames != FIELDS:
             raise ImportFailure([{"row": 1, "error": "Expected the six documented MoneyVis CSV columns in order"}])
         for number, row in enumerate(reader, 2):
@@ -34,6 +37,8 @@ def parse_statement(data, settings):
                     raise ValueError("Incorrect column count")
                 if any(len(value) > 3000 or "\x00" in value for value in row.values()):
                     raise ValueError("Field too long or contains a null character")
+                if not all(row[name].isascii() for name in ASCII_FIELDS):
+                    raise ValueError("Dates and amounts must use ASCII characters only")
                 date = dt.datetime.strptime(row[FIELDS[0]].strip(), "%d/%m/%Y").date()
                 debit = parse_optional_pennies(row[FIELDS[3]])
                 credit = parse_optional_pennies(row[FIELDS[4]])
@@ -56,8 +61,11 @@ def parse_statement(data, settings):
             except ValueError as error:
                 if len(diagnostics) < settings.max_diagnostics:
                     diagnostics.append({"row": number, "error": str(error)})
-    except (UnicodeError, csv.Error) as error:
+    except UnicodeError as error:
         raise ImportFailure([{"row": 0, "error": f"Invalid CSV encoding or structure: {type(error).__name__}"}]) from error
+    except csv.Error as error:
+        # csv messages describe structure only (quoting, field size), never field contents.
+        raise ImportFailure([{"row": 0, "error": f"Invalid CSV structure: {error}"}]) from error
     if diagnostics:
         raise ImportFailure(diagnostics)
     if not parsed:
@@ -73,6 +81,12 @@ def import_statement(data, filename, settings):
         existing = db.execute("SELECT * FROM imports WHERE id=?", (digest,)).fetchone()
         if existing:
             return {"sha256": digest, "inserted": 0, "duplicates": existing["rows"], "rows": existing["rows"], "blank_types": blank_types}
+        # Python integers, not SQLite SUM, so the guard itself cannot overflow; any summary
+        # total is then at most MAX_PENNIES. Raising here rolls back before any insert.
+        gross = sum(abs(r[0]) for r in db.execute("SELECT amount_pence FROM transactions"))
+        gross += sum(abs(row["amount_pence"]) for row in parsed)
+        if gross > MAX_PENNIES:
+            raise ImportFailure([{"row": 0, "error": "Statement would exceed the gross ledger integer-penny bound"}])
         db.execute("INSERT INTO imports VALUES(?,?,?,?)", (digest, Path(filename).name[:200], len(parsed), dt.datetime.now(dt.timezone.utc).isoformat()))
         available = rules(db)
         for row in parsed:

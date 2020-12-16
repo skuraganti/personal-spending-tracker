@@ -44,3 +44,14 @@ sh scripts/stack.sh up
 Local URL: http://127.0.0.1:8280. The container limit is 256 MiB for the app, plus Docker and host process overhead. Tested one portfolio stack at a time on an ARM Mac with 8 GiB host RAM and a 2 GiB Docker VM. No GPU. Defaults use independent named volumes and localhost bindings. Stack stop retains state; no unrelated services are managed.
 
 For Pages: `python3 -m http.server 8008 --bind 127.0.0.1 --directory docs`. With optional agent-browser 0.38.1 installed, run `sh scripts/check-pages.sh`; assertions are in `tests/pages-smoke.js`. No browser automation package is shipped to Pages.
+
+## Import and rule maintenance verification
+
+- Native suite: **51 passed** with Python 3.14.8 and Node available; Ruff passed. The existing TestClient deprecation warning remains.
+- Regression coverage includes BOM/CRLF/bare-CR and quoted CSV, malformed/oversized inputs, ASCII monetary fields, atomic rejection, occurrence identity, rule priority/ties and overrides, and exact currency display at both signed integer-penny limits.
+- Docker image rebuilt; isolated localhost HTTP checks passed for import/reimport, rule tie ordering, override lifecycle, atomic amount rejection, summary totals and budget alerts. Restart preserved the records, saved rule and budget.
+- The 6,567-row prepared MoneyVis research snapshot passed in a separate temporary native database; a repeated import added zero rows. Source bytes were not redistributed.
+- Chrome verified a file-chooser import reporting **0 inserted / 2 already imported**, plus exact large-amount rendering at **£90,071,992,547,389.71** using synthetic input.
+- The rule walkthrough runs against its own synthetic CSV and an empty isolated database. GitHub Pages remains the simpler synthetic browser demonstration.
+
+The gross-ledger guard scans existing amounts for each new statement. Existing databases already beyond the numeric bound are not automatically repaired; their summaries may still overflow, and new nonduplicate imports are rejected. The guard is a numeric safety limit, not a plausibility check. These checks do not establish correctness for every possible workload.

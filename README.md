@@ -6,11 +6,11 @@ Real CSV transaction imports, rule-based categorization, recurrence candidates, 
 
 ## Two ways to explore
 
-The **Pages site** is a self-contained browser demonstration with relative assets and no backend, credentials or model calls. Its data modes are visibly labeled: original public-publisher snapshots/recorded observations where allowed, explicit simulation where appropriate, and an entirely synthetic Ledger fixture. The repository also contains the **full Python/Docker application**; Pages cannot execute its backend or background workers.
+The **Pages site** is a self-contained browser demonstration over an entirely synthetic fixture, with relative assets and no backend, credentials or model calls. Its rule control is a simple one-shot "contains" reclassification ([docs/DEMO.md](docs/DEMO.md)). The repository also contains the **full Python/Docker application**, with stored priority rules, transaction-type conditions, manual overrides and reclassification ([docs/RULES.md](docs/RULES.md)). Pages cannot run the backend.
 
 ## Run the full application locally
 
-Requirements: Python3.13+, [uv](https://docs.astral.sh/uv/), Docker and Docker Compose. Contour also needs Node24+ for the trusted official TypeScript parser when running native tests; its Docker image includes Node. No GPU is required. Run one portfolio stack at a time on a small machine.
+Requirements: a POSIX host (macOS or Linux), Python3.13+, [uv](https://docs.astral.sh/uv/), Docker and Docker Compose. No GPU is required. Run one portfolio stack at a time on a small machine.
 
 ```sh
 uv sync --frozen
@@ -20,7 +20,21 @@ sh scripts/stack.sh up
 
 Open **http://127.0.0.1:8280**. Stop with `sh scripts/stack.sh stop`; this retains this repository's independent named volume. Helpers honor your current Docker context or explicitly supplied `DOCKER_HOST`; they do not select a personal machine profile. Images/networks/volumes are uniquely named `portfolio-release-*`, keeping the original development stacks separate. Host ports bind to127.0.0.1.
 
-For your own bank-export CSV, use the documented import schema. Optional local research acquisition of the author-linked MoneyVis dataset uses `uv run python scripts/acquire_data.py` followed by `uv run python scripts/prepare_data.py`. Review DATA_SOURCES.md first; files remain excluded from Git. No transaction data or actual-account screenshots are included in this public repository. The Pages fixture is not presented as observed financial data.
+To restart without losing data, run `sh scripts/stack.sh stop` and then `sh scripts/stack.sh up`.
+
+### Import format
+
+A statement is a UTF-8 CSV (an optional BOM is fine) whose header is exactly `Transaction Date,Transaction Type,Transaction Description,Debit Amount,Credit Amount,Balance`.
+
+- **Dates** are `DD/MM/YYYY`.
+- **Amounts** use ASCII digits with at most two decimal places, and each row fills exactly one of debit or credit. **Balance** may be signed.
+- **Line endings:** CRLF, LF or bare CR. Quoted fields may contain commas and newlines, and blank lines are skipped.
+- **Limits:** 1,000,000 bytes and 50,000 rows by default (`.env.example`).
+- **Numeric safety bound:** every amount or balance must be at most 2^53 − 1 pennies (about £90 trillion). A statement is also rejected if it would push the gross ledger, the sum of absolute values of all stored amounts, past that bound. Totals then stay exact in SQLite and JavaScript. This guards integer overflow, not plausibility; ledgers stored before the bound existed are not rewritten.
+- **Atomic:** the whole file is validated before any write, so one bad row rejects it all.
+- **Identity:** a byte-identical file is recognized as already imported. Any other file is a new statement, even if it is a re-saved or overlapping export. Identical rows are kept as separate occurrences.
+
+For your own bank-export CSV, use this schema. Optional local research acquisition of the author-linked MoneyVis dataset uses `uv run python scripts/acquire_data.py` followed by `uv run python scripts/prepare_data.py`. Review DATA_SOURCES.md first; files remain excluded from Git. No transaction data or actual-account screenshots are included in this public repository. The Pages fixture is not presented as observed financial data.
 
 ## Verify
 
@@ -30,19 +44,19 @@ uv run ruff check .
 python3 -m http.server 8008 --bind 127.0.0.1 --directory docs
 ```
 
-The final command previews Pages at http://127.0.0.1:8008. Bootstrap prepares this checkout's own data before data-boundary integration tests. Unit fixtures, actual-source checks, captured evaluations and browser simulations are distinguished in [VERIFICATION.md](VERIFICATION.md). No model call is required for the native test suite.
+The final command previews Pages at http://127.0.0.1:8008. For Ledger, bootstrap only creates the local `data/verification/` directory; it downloads nothing. Native tests use synthetic statements, including the [rule walkthrough](docs/RULES.md). Install Node.js to run the exact browser-currency formatter regression; that single test is skipped when Node is unavailable. Unit fixtures, actual-source checks, captured evaluations and browser simulations are distinguished in [VERIFICATION.md](VERIFICATION.md). No model call is required for the native test suite.
 
 ## Scope and limitations
 
 The browser fixture is entirely synthetic. Author-described anonymized MoneyVis data are not redistributed because their standalone license is unresolved. GBP is a documented assumption for that local research dataset. Recurrences are candidates, not ground truth.
 
-[DEMO.md](DEMO.md) describes a local walkthrough; [docs/DEMO.md](docs/DEMO.md) describes the Pages interactions. [DECISIONS.md](DECISIONS.md), [PLAN.md](PLAN.md) and [SOURCE_MANIFEST.json](SOURCE_MANIFEST.json) record engineering choices and source versions. All original implementation was developed with Claude Code through the approved connection and ChatGPT architecture, integration, review, correction and independent verification. Upstream components and original data publishers are credited in [UPSTREAM.md](UPSTREAM.md); third-party licenses remain in force. No additional license grant for the original implementation has been selected.
+[DEMO.md](DEMO.md) describes a local walkthrough, [docs/RULES.md](docs/RULES.md) a reproducible categorization walkthrough and [docs/DEMO.md](docs/DEMO.md) the Pages interactions. [DECISIONS.md](DECISIONS.md), [PLAN.md](PLAN.md) and [SOURCE_MANIFEST.json](SOURCE_MANIFEST.json) record engineering choices and source versions. Upstream components and original data publishers are credited in [UPSTREAM.md](UPSTREAM.md); third-party licenses remain in force. Original application code and authored documentation remain unlicensed; see [LICENSING.md](LICENSING.md) for reserved rights and third-party boundaries.
 
 ## Explore projects
 
 [Ledger](https://skuraganti.github.io/personal-spending-tracker/) · [Fieldglass](https://skuraganti.github.io/live-earth-dashboard/) · [Relay](https://skuraganti.github.io/data-pipeline-monitor/) · [Folio](https://skuraganti.github.io/private-ai-knowledge-engine/) · [Contour](https://skuraganti.github.io/ai-codebase-explorer/) · [TraceLab](https://skuraganti.github.io/ai-agent-evaluation-lab/) · [Faultline](https://skuraganti.github.io/ai-incident-investigator/)
 
-Prerequisites: a POSIX host (macOS or Linux), Docker with Compose, and `uv`. Native scripts use POSIX process/file-lock facilities. Dependency installation needs internet; Relay, Folio and TraceLab also download original-source data during bootstrap. Defaults work without copying `.env.example`. Optional model integration uses a locally configured host bridge; inference may be remote. The supplied bridge requires `zsh`, an existing `claude-omni` command and the approved `cookllm` route; no provider is included or enabled by Pages.
+Defaults work without copying `.env.example`. Dependency installation needs internet access. Ledger has no model integration or host bridge.
 
 ## Implementation history
 
