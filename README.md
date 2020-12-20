@@ -2,11 +2,11 @@
 
 **[Open the GitHub Pages browser demo](https://skuraganti.github.io/personal-spending-tracker/)** · [Architecture](ARCHITECTURE.md) · [Data sources](DATA_SOURCES.md) · [Verification](VERIFICATION.md)
 
-Real CSV transaction imports, rule-based categorization, recurrence candidates, spending summaries and configurable local budget alerts. No bank connections.
+Import real CSV transactions, apply category rules and review possible recurring payments. Ledger summarizes spending and raises local budget alerts you can configure. It has no bank connections.
 
 ## Two ways to explore
 
-The **Pages site** is a self-contained browser demonstration over an entirely synthetic fixture, with relative assets and no backend, credentials or model calls. Its rule control is a simple one-shot "contains" reclassification ([docs/DEMO.md](docs/DEMO.md)). The repository also contains the **full Python/Docker application**, with stored priority rules, transaction-type conditions, manual overrides and reclassification ([docs/RULES.md](docs/RULES.md)). Pages cannot run the backend.
+Try the **Pages site** with an entirely synthetic example. It runs in the browser using relative assets, with no backend, credentials or model calls. Its rule control reclassifies transactions with a one-shot "contains" rule ([docs/DEMO.md](docs/DEMO.md)). Run the **full Python/Docker application** for stored priority rules, transaction-type conditions, manual overrides and reclassification ([docs/RULES.md](docs/RULES.md)). Pages cannot run the backend.
 
 ## Run the full application locally
 
@@ -18,7 +18,7 @@ uv run python scripts/bootstrap.py
 sh scripts/stack.sh up
 ```
 
-Open **http://127.0.0.1:8280**. Stop with `sh scripts/stack.sh stop`; this retains this repository's independent named volume. Helpers honor your current Docker context or explicitly supplied `DOCKER_HOST`; they do not select a personal machine profile. Images/networks/volumes are uniquely named `portfolio-release-*`, keeping the original development stacks separate. Host ports bind to127.0.0.1.
+Open **http://127.0.0.1:8280**. To stop the app, use `sh scripts/stack.sh stop`; this keeps the repository's own named volume. The helpers use the current Docker context or an explicit `DOCKER_HOST`, without choosing a personal machine profile. Images, networks and volumes use unique `portfolio-release-*` names, separate from the original development stacks. Host ports bind to 127.0.0.1.
 
 To restart without losing data, run `sh scripts/stack.sh stop` and then `sh scripts/stack.sh up`.
 
@@ -31,8 +31,8 @@ A statement is a UTF-8 CSV (an optional BOM is fine) whose header is exactly `Tr
 - **Line endings:** CRLF, LF or bare CR. Quoted fields may contain commas and newlines, and blank lines are skipped.
 - **Limits:** 1,000,000 bytes and 50,000 rows by default (`.env.example`).
 - **Numeric safety bound:** every amount or balance must be at most 2^53 − 1 pennies (about £90 trillion). A statement is also rejected if it would push the gross ledger, the sum of absolute values of all stored amounts, past that bound. Totals then stay exact in SQLite and JavaScript. This guards integer overflow, not plausibility; ledgers stored before the bound existed are not rewritten.
-- **Atomic:** the whole file is validated before any write, so one bad row rejects it all.
-- **Identity:** a byte-identical file is recognized as already imported. Any other file is a new statement, even if it is a re-saved or overlapping export. Identical rows are kept as separate occurrences.
+- **Atomic:** Ledger validates the whole file before writing anything. One bad row rejects the file.
+- **Identity:** Ledger recognizes a byte-identical file as already imported. Any other file starts a new statement, including a re-saved or overlapping export. Identical rows remain separate occurrences.
 
 For your own bank-export CSV, use this schema. Optional local research acquisition of the author-linked MoneyVis dataset uses `uv run python scripts/acquire_data.py` followed by `uv run python scripts/prepare_data.py`. Review DATA_SOURCES.md first; files remain excluded from Git. No transaction data or actual-account screenshots are included in this public repository. The Pages fixture is not presented as observed financial data.
 
